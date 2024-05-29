@@ -1,3 +1,7 @@
+# query = I heard this summary statement from the CEO about the technology and need each part of it explained in extensive detail as I'm doing research, "Karafin explained that the nanomaterial layer acts as a spatial light modulator to produce the light wavefront amplitudes, while a waveguide layer introduces the phase delays that make the light converge to form the holographic object."
+
+
+
 # streamlit run chat.py; to close, ctrl+C in terminal first then close browser
 # >3K files chunked into 2K chunks; 8 chunks retrieved
 # With translation. Choice of similarity search or .as_retriever (which seem identical except I can choose to retrieve more than 4 chunks if I want with similarity search) and finally able to get retrieved docs while still using the chain.invoke sequence 
@@ -103,7 +107,6 @@ def get_translation(text, detected_language = None):
 def count_tokens(input_string: str) -> int:
     tokenizer = tiktoken.get_encoding("cl100k_base")
     tokens = tokenizer.encode(input_string)
-    print(f'number of tokens: {len(tokens)}')
     return len(tokens)
 
 # def calculate_input_cost(original_prompt):
@@ -115,18 +118,30 @@ def count_tokens(input_string: str) -> int:
 #     total_cost = (num_tokens / 1_000_000) * cost_per_million_tokens
 #     print(f"The total cost for using gpt-4o is: ${total_cost:.6f}")
 
-def get_response(query, model_selection_user, detected_language):
+def get_response(query, model_selection, detected_language, retrieval_selection):
     # I get faster and shorter responses API'ing into GROQ and using the llama3 70b model vs openAI GPT 3.5 Turbo and price is about same ... but sacrifice a decent amount of context window. I change to GPT3.5 when retrieval is more than Groq can handle for a given question
     #model_openai = ChatOpenAI(openai_api_key=OPENAI_API_KEY, model="gpt-3.5-turbo")
-    model_openai = ChatOpenAI(openai_api_key=OPENAI_API_KEY, model="gpt-3.5-turbo")
+    model_gpt_3_5 = ChatOpenAI(openai_api_key=OPENAI_API_KEY, model="gpt-3.5-turbo")
+    model_gpt_4o = ChatOpenAI(openai_api_key=OPENAI_API_KEY, model="gpt-4o") # or gpt-4o-2024-05-13
     model_llama3 = ChatGroq(temperature=0, groq_api_key=GROQ_API_KEY, model_name="llama3-70b-8192") # 8192 token limit on groq but actually can't even reach that since the API limit on groq with this model is 6,000 tokens per minute
     index_name = "light-field-lab"
     embeddings = OpenAIEmbeddings()
     pinecone = PineconeVectorStore.from_existing_index(index_name, embeddings)
     parser = StrOutputParser()
 
-    # Retrieve the documents using similarity search. 
-    retrieved_docs = pinecone.similarity_search(query, k=8)  # Adjust k as needed which not something I can change when using retriever.invoke(query). I can put in k=5 but I will only get 4 which is the default
+    if retrieval_selection == "Auto":
+        k=8
+    elif retrieval_selection == 8:
+        k=8
+    elif retrieval_selection == 12:
+        k=12
+    elif retrieval_selection == 16:
+        k=16
+    elif retrieval_selection == 20:
+        k=20
+    elif retrieval_selection == 24:
+        k=24
+    retrieved_docs = pinecone.similarity_search(query, k=k)  # Adjust k as needed which not something I can change when using retriever.invoke(query). I can put in k=5 but I will only get 4 which is the default
 
     # Join the retrieved documents' page_content into a single string
     context = "\n".join(doc.page_content for doc in retrieved_docs)
@@ -145,14 +160,23 @@ def get_response(query, model_selection_user, detected_language):
     prompt_template = get_prompt(context, query)
     #print(f'Prompt: {prompt_template}')
     tokens = count_tokens(prompt_template)
+    print(f'Number of tokens: {tokens}')
 
-    if model_selection_user == "GPT 3.5 Turbo":
-        model = model_openai
-    elif tokens > 6000:
-        model = model_openai
+    if model_selection == "GPT 3.5 Turbo":
+        model = model_gpt_3_5
+    elif model_selection == "Llama3 70b":
+        model = model_llama3
+    elif model_selection == "GPT 4o":
+        model = model_gpt_4o
+    elif 6000 < tokens <= 30000:
+        model = model_gpt_3_5
+        model_selection = "GPT 3.5 Turbo"
+    elif tokens > 30000:
+        model = model_gpt_4o
+        model_selection = "GPT 4o"
     else:
         model = model_llama3
-
+        model_selection = "Llama3 70b"
     # Define the prompt as a ChatPromptTemplate
     prompt = ChatPromptTemplate.from_template(prompt_template)
     #print(f'Prompt: {prompt}')
@@ -250,38 +274,44 @@ def get_response(query, model_selection_user, detected_language):
 
 
 
-    if model == model_openai:
-        # Get the selected model
-        selected_model = "model"
-        # Print or log the selected model
-        print(f'The selected model was: {selected_model}')
-    else:
-        selected_model = "model2"
-        # Print or log the selected model
-        print(f'The selected model was: {selected_model}')
-
-    if selected_model == "model":
+    # if model == model_openai:
+    #     # Get the selected model
+    #     selected_model = "model"
+    #     # Print or log the selected model
+    #     print(f'The selected model was: {selected_model}')
+    # else:
+    #     selected_model = "model2"
+    #     # Print or log the selected model
+    #     print(f'The selected model was: {selected_model}')
+    if model_selection == "GPT 3.5 Turbo":
         # Token count + cost
         num_input_tokens = tokens
         input_cost = (num_input_tokens / 1_000_000) * .5 # GPT-3.5 Turbo is $0.5 per M token (input)
-        #input_cost = (num_input_tokens / 1_000_000) * 5 # GPT-4o is $5 per M token (input)
         num_output_tokens = count_tokens(str(result))
+        print(f'Number of output tokens: {num_output_tokens}')
         output_cost = (num_output_tokens / 1_000_000) * 1.5 # GPT-3.5 Turbo is $1.5 per M token (output)
-        #output_cost = (num_output_tokens / 1_000_000) * 15 # GPT-4o is $15 per M tokens (output)
         total_cost = input_cost + output_cost
-    elif selected_model == "model2":
+    elif model_selection == "Llama3 70b":
         # Token count + cost
         num_input_tokens = tokens
         input_cost = (num_input_tokens / 1_000_000) * .59 # Llama3 70b on Groq is $0.59 per M token (input)
         num_output_tokens = count_tokens(str(result))
+        print(f'Number of output tokens: {num_output_tokens}')
         output_cost = (num_output_tokens / 1_000_000) * .79 # Llama3 70b on Groq is $.79 per M token (output)
+        total_cost = input_cost + output_cost
+    elif model_selection == "GPT 4o":
+        num_input_tokens = tokens
+        input_cost = (num_input_tokens / 1_000_000) * 5 # GPT-4o is $5 per M token (input)
+        num_output_tokens = count_tokens(str(result))
+        print(f'Number of output tokens: {num_output_tokens}')
+        output_cost = (num_output_tokens / 1_000_000) * 15 # GPT-4o is $15 per M tokens (output)
         total_cost = input_cost + output_cost
     if detected_language != "en":
         translation = get_translation(result, detected_language)
         result = translation
-        return result, retrieved_docs, num_input_tokens, input_cost, num_output_tokens, output_cost, total_cost, selected_model
+        return result, retrieved_docs, num_input_tokens, input_cost, num_output_tokens, output_cost, total_cost, model_selection
     else: 
-        return result, retrieved_docs, num_input_tokens, input_cost, num_output_tokens, output_cost, total_cost, selected_model
+        return result, retrieved_docs, num_input_tokens, input_cost, num_output_tokens, output_cost, total_cost, model_selection
 
 def sources_to_print(retrieved_docs):
     """Prints unique URLs and titles from retrieved documents."""
@@ -346,10 +376,15 @@ st.markdown("""
 def main():
     st.title("Light Field Lab Bot 🤖")
     st.write("**by Brian Morin** | **Model: Mixture of GPT3.5 Turbo and Llama3 70b** 🧠") 
-    st.write("This genAI model has been trained on public domain information from lightfieldlab.com and related news coverage.")
+    st.write("This genAI model has been trained on public domain information from lightfieldlab.com and related news.")
     #st.write("**by digitalcxpartners.com**\n\nModel: GPT3.5 Turbo")
 
-    model_selection_user = st.selectbox("Select foundation model:", ["Auto", "GPT 3.5 Turbo", "Llama3 70b"], index=0)
+    # Create columns for a single line
+    col1, col2 = st.columns([1, 3])  # Adjust the column width ratios as needed
+    with col1:
+        model_selection = st.selectbox("Select foundation model:", ["Auto", "GPT 3.5 Turbo", "Llama3 70b", "GPT 4o"], index=0)
+    with col2:
+        retrieval_selection = st.selectbox("Select retrieval size:", ["Auto", 8, 12, 16, 20, 24], index=0)
 
     #query = st.text_area("Enter your prompt: :pencil2:")
     query = st.text_area(":pencil2: Enter your prompt:")
@@ -374,13 +409,16 @@ def main():
             with st.spinner("Generating response... :hourglass_flowing_sand:"):
 
                 # Add your logic here to use the selected model
-                if model_selection_user == "Auto":
+                if model_selection == "Auto":
                     # Logic for auto model selection
                     pass
-                elif model_selection_user == "GPT 3.5 Turbo":
+                elif model_selection == "GPT 3.5 Turbo":
                     # Logic for GPT 3.5 Turbo
                     pass
-                elif model_selection_user == "Llama3 70b":
+                elif model_selection == "Llama3 70b":
+                    # Logic for Llama3 70b
+                    pass
+                elif model_selection == "GPT 4o":
                     # Logic for Llama3 70b
                     pass
                 # Replace the pass statements with the actual model handling logic
@@ -393,11 +431,11 @@ def main():
                     #print('English path taken')
                     detected_language = "en"
                     #st.markdown("Generating response...wait just a few seconds")
-                    result, retrieved_docs, num_input_tokens, input_cost, num_output_tokens, output_cost, total_cost, selected_model = get_response(query, model_selection_user, detected_language)
+                    result, retrieved_docs, num_input_tokens, input_cost, num_output_tokens, output_cost, total_cost, model_selection = get_response(query, model_selection, detected_language, retrieval_selection)
                 else: # non-English path
                     #print('non-English path taken')
                     query2, detected_language = get_translation(query)
-                    result, retrieved_docs, num_input_tokens, input_cost, num_output_tokens, output_cost, total_cost, selected_model = get_response(query2, model_selection_user, detected_language)
+                    result, retrieved_docs, num_input_tokens, input_cost, num_output_tokens, output_cost, total_cost, model_selection = get_response(query2, model_selection, detected_language, retrieval_selection)
                 #print(result)
                 unique_urls, unique_titles = sources_to_print(retrieved_docs)
                 #st.write(result)
@@ -423,7 +461,7 @@ def main():
                 # using "session state" to change onscreen variables
                 st.session_state.session_cost += total_cost
                 st.session_state.question_count += 1
-                st.session_state.selected_model = selected_model
+                st.session_state.selected_model = model_selection
 
 
                 session_cost_delta = st.session_state.session_cost - st.session_state.previous_session_cost
@@ -436,10 +474,12 @@ def main():
                 st.sidebar.markdown(f"** **")
                 st.sidebar.markdown(f"**Question Count:** {st.session_state.question_count} 💬")
                 st.sidebar.markdown(f"** **")
-                if selected_model == "model":
+                if model_selection == "GPt 3.5 Turbo":
                     st.sidebar.caption(f"**Last model invoked:**\n\nGPT-3.5 🧠")
-                if selected_model == "model2":
+                if model_selection == "Llama3 70b":
                     st.sidebar.caption(f"**Last model invoked:**\n\nLlama3 70b 🧠")
+                if model_selection == "GPt 4o":
+                    st.sidebar.caption(f"**Last model invoked:**\n\nGPT 4o 🧠")
 
                 def send_to_flask(query, result):
                     webhook_url = "https://up-poodle-resolved.ngrok-free.app/light-field-lab"

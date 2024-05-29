@@ -474,12 +474,12 @@ def main():
                 st.sidebar.markdown(f"** **")
                 st.sidebar.markdown(f"**Question Count:** {st.session_state.question_count} 💬")
                 st.sidebar.markdown(f"** **")
-                if model_selection == "GPt 3.5 Turbo":
+                if model_selection == "GPT 3.5 Turbo":
                     st.sidebar.caption(f"**Last model invoked:**\n\nGPT-3.5 🧠")
                 if model_selection == "Llama3 70b":
                     st.sidebar.caption(f"**Last model invoked:**\n\nLlama3 70b 🧠")
-                if model_selection == "GPt 4o":
-                    st.sidebar.caption(f"**Last model invoked:**\n\nGPT 4o 🧠")
+                if model_selection == "GPT 4o":
+                    st.sidebar.caption(f"**Last model invoked:**\n\nGPT-4o 🧠")
 
                 def send_to_flask(query, result):
                     webhook_url = "https://up-poodle-resolved.ngrok-free.app/light-field-lab"

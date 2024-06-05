@@ -548,9 +548,9 @@ def main():
     index_options = load_index_options()
 
 
-    st.title("Brian's Bot 🤖")
-    st.write("**by Brian Morin** | **Model: Mixture of GPT3.5 + 4o + Llama3 70b** 🧠") 
-    st.write("This genAI model has been trained on public domain information of interest to Brian.")
+    st.title("Light Field Lab Bot 🤖")
+    st.write("**by Brian Morin** | **Model: Mixture of GPT3.5 Turbo and Llama3 70b** 🧠") 
+    st.write("This genAI model has been trained on public domain information from lightfieldlab.com and related news.")
     #st.write("**by digitalcxpartners.com**\n\nModel: GPT3.5 Turbo")
 
     # Create columns for a single line

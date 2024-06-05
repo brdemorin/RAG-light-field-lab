@@ -780,7 +780,7 @@ def main():
                     #st.markdown("Generating response...wait just a few seconds")
                     index_name = st.session_state.main_index_name
                     if index_name == "__pick__":
-                        st.markdown("Please select an index name.")
+                        st.markdown("Please select an index.")
                         return
                     else:
                         result, retrieved_docs, num_input_tokens, input_cost, num_output_tokens, output_cost, total_cost, model_selection = get_response(query, model_selection, detected_language, retrieval_selection, index_name, voice_playback)

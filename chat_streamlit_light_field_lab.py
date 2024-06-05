@@ -672,16 +672,15 @@ def main():
             "filetype": uploaded_file.type,
             "filesize": file_size_formatted
         }
-        #st.sidebar.write(file_details)
-        #st.sidebar.caption(f'Downloaded. {file_details}')
         st.sidebar.markdown(f'**File details**:\n{file_details}')
 
-        def send_to_flask(uploaded_file):
+        index_name = st.sidebar.selectbox("Select index to append:", index_options, index=0, key="index_name_uploaded_file")
+
+        def send_to_flask(uploaded_file, index_name):
             webhook_url = "https://up-poodle-resolved.ngrok-free.app/brian-indexing"
             files = {'file': (uploaded_file.name, uploaded_file, uploaded_file.type)}
-            response = requests.post(webhook_url, files=files)
-            #st.write(response.text)
-            #st.sidebar.write(response.text)
+            data = {'index_name': index_name}
+            response = requests.post(webhook_url, files=files, data=data)
 
             # Parse the JSON response instead of writing the entire message like the above did
             response_json = response.json()
@@ -690,7 +689,7 @@ def main():
             message = response_json.get("message", "No message received")
             st.sidebar.markdown(f'**Response from brian_flask_02:**\n"{message}"')
 
-        send_to_flask(uploaded_file)
+        send_to_flask(uploaded_file, index_name)
 
     # if st.button("Add 🚀", key="text_to_vectorize_button"):
     #     if add_text_to_vectorize:

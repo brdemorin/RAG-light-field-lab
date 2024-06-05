@@ -549,7 +549,7 @@ def main():
 
 
     st.title("Light Field Lab Bot 🤖")
-    st.write("**by Brian Morin** | **Model: Mixture of GPT3.5 Turbo and Llama3 70b** 🧠") 
+    st.write("**by Brian Morin** | **Model: Mixture of GPT 3.5 | GPT 4o | Llama3 70b** 🧠") 
     st.write("This genAI model has been trained on public domain information from lightfieldlab.com and related news.")
     #st.write("**by digitalcxpartners.com**\n\nModel: GPT3.5 Turbo")
 

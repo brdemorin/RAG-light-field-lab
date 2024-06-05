@@ -779,9 +779,11 @@ def main():
                     detected_language = "en"
                     #st.markdown("Generating response...wait just a few seconds")
                     index_name = st.session_state.main_index_name
-                    # if index_name == "__pick__":
-                    #     st.sidebar.markdown("Please select an index name.")
-                    result, retrieved_docs, num_input_tokens, input_cost, num_output_tokens, output_cost, total_cost, model_selection = get_response(query, model_selection, detected_language, retrieval_selection, index_name, voice_playback)
+                    if index_name == "__pick__":
+                        st.sidebar.markdown("Please select an index name.")
+                        return
+                    else:
+                        result, retrieved_docs, num_input_tokens, input_cost, num_output_tokens, output_cost, total_cost, model_selection = get_response(query, model_selection, detected_language, retrieval_selection, index_name, voice_playback)
                 else: # non-English path
                     #print('non-English path taken')
                     query2, detected_language = get_translation(query)

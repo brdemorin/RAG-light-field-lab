@@ -578,7 +578,7 @@ def main():
 
 
 
-    url_to_index = st.sidebar.text_input("Paste URL to scrape and vectorize:", key="url_to_index_sidebar")
+    url_to_index = st.sidebar.text_input("Paste URL to web page, youtube video, or PDF to scrape/parse/transcribe then vectorize:", key="url_to_index_sidebar")
     st.sidebar.empty()
     if url_to_index:
         # Sidebar input for index name

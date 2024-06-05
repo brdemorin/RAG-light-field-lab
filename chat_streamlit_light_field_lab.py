@@ -607,7 +607,7 @@ def main():
                         if response.status_code == 200:
                             response_json = response.json()
                             message = response_json.get("message")
-                            st.sidebar.markdown(f'**Response from backend flask server:**\n"{message}"')
+                            st.sidebar.markdown(f'**Response from brian_flask_02:**\n"{message}"')
                         else:
                             st.sidebar.markdown(f'{response.text}')
                     send_to_flask(url_to_index, index_name, email_summary, model_selection_for_summary)
@@ -645,7 +645,7 @@ def main():
                             if response.status_code == 200:
                                 response_json = response.json()
                                 message = response_json.get("message")
-                                st.sidebar.markdown(f'**Response from backend flask server:**\n"{message}"')
+                                st.sidebar.markdown(f'**Response from brian_flask_02:**\n"{message}"')
                             else:
                                 st.sidebar.markdown(f'{response.text}')
                         send_to_flask(add_text_to_vectorize, index_name, email_summary_checkbox, model_selection_for_summary_add_text)
@@ -688,7 +688,7 @@ def main():
             
             # Extract and display the message
             message = response_json.get("message", "No message received")
-            st.sidebar.markdown(f'**Response from server:**\n"{message}"')
+            st.sidebar.markdown(f'**Response from brian_flask_02:**\n"{message}"')
 
         send_to_flask(uploaded_file)
 

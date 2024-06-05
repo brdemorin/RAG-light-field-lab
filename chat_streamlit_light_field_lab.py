@@ -746,7 +746,7 @@ def main():
     #     else:
     #         st.write("Unsupported file type.")
 
-    voice_playback = st.checkbox("Voice playback (1) Do not select '4o' - not yet integrated. (2) Slow due to post processing. Reminder to fix.", value=False, key="voice_playback_checkbox") # by default "False" means not checked. If checked, it will be "True"
+    voice_playback = st.checkbox("Voice playback (1) Do not select '4o' - not yet integrated. (2) Slow due to post processing. Reminder to fix inline streaming.", value=False, key="voice_playback_checkbox") # by default "False" means not checked. If checked, it will be "True"
     # Generate output
     if st.button("Run 🚀"):
         if query:

@@ -747,7 +747,7 @@ def main():
     #     else:
     #         st.write("Unsupported file type.")
 
-    voice_playback = st.checkbox("Voice playback (I still have optimize to stream tokens for sub 500ms latency)", value=False, key="voice_playback_checkbox") # by default "False" means not checked. If checked, it will be "True"
+    voice_playback = st.checkbox("Voice playback (Slow due to post processing. Reminder to fix by streaming tokens thru TTS)", value=False, key="voice_playback_checkbox") # by default "False" means not checked. If checked, it will be "True"
     # Generate output
     if st.button("Run 🚀"):
         if query:

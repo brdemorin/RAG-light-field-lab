@@ -590,7 +590,7 @@ def main():
         # Sidebar input for index name
         index_name = st.sidebar.selectbox("Select index to append:", index_options, index=0)
         # Add radio button for email summary option
-        special_instructions = st.sidebar.text_input(":memo: Editing Instructions (e.g. what to retain/remove)", key="special_instructions")
+        special_instructions = st.sidebar.text_input(":memo: [optional] Editing Instructions (e.g. what to retain/remove)", key="special_instructions")
         #email_summary = st.sidebar.radio("Email summary:", ("No", "Yes"))
         email_summary = st.sidebar.checkbox("Email summary")
         st.sidebar.empty()  # Placeholder for the selection box
@@ -627,7 +627,7 @@ def main():
             # Sidebar input for index name
             index_name = st.sidebar.selectbox("Select index to append:", index_options, index=0, key="index_name_add_text")
             # Add radio button for email summary option
-            special_instructions = st.sidebar.text_input(":memo: Editing Instructions (e.g. what to retain/remove)", key="special_instructions_add_text")
+            special_instructions = st.sidebar.text_input(":memo: [optional] Editing Instructions (e.g. what to retain/remove)", key="special_instructions_add_text")
             #email_summary = st.sidebar.radio("Email summary:", ("No", "Yes"))
             email_summary_checkbox = st.sidebar.checkbox("Email summary", key="email_summary_checkbox")
             st.sidebar.empty()  # Placeholder for the selection box

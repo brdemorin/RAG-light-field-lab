@@ -539,10 +539,16 @@ def main():
         payload = {"index_names": options}
         response = requests.post(webhook_url, json=payload)
         if response.status_code == 200:
-            st.experimental_rerun() # this refreshes index drop-down in both the sidebar and main page without refreshing the entire page
-            # not writing anything back here due to refresh above 
+            # st.session_state['index_names'] = options
+            # st.success("Index names saved successfully")
+            st.rerun() # this refreshes everything without looking like a f5 re-load of the entire page
+        if response.status_code == 400:
+            response_json = response.json()
+            message = response_json.get("message")
+            st.sidebar.markdown(f'**Response from brian_flask_02:**\n"{message}"')
         else:
-            st.sidebar.error("Backend server offline. Failed to save index names.")
+            print(response.text, response.status_code)
+            st.sidebar.error("Failed to save index names.")
 
     # Load index options
     index_options = load_index_options()
